@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import type { ThemeName } from '@/types';
 
 const activeTheme = ref('');
 const settingsStore = useSettingsStore();
+const { t } = useI18n();
 
 withDefaults(defineProps<{ showText?: boolean }>(), { showText: false });
 
@@ -43,12 +45,11 @@ function toggleNight() {
 
 <template>
   <UButton
-    variant="link"
-    title="Toggle Night Mode"
+    variant="ghost"
     color="neutral"
-    :label="showText ? 'Toggle Night Mode' : ''"
+    :title="t('nav.toggleNightMode')"
+    :label="showText ? t('nav.toggleNightMode') : ''"
     @click="toggleNight"
     icon="mdi:brightness-6"
-  >
-  </UButton>
+  />
 </template>
