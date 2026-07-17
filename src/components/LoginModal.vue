@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AuthStorageWithBotId } from '@/types';
+import { useI18n } from 'vue-i18n';
 
 export interface LoginModalProps {
   loginInfo?: AuthStorageWithBotId;
@@ -10,6 +11,8 @@ const emit = defineEmits<{
   close: [value: boolean];
 }>();
 
+const { t } = useI18n();
+
 function loginResult(result: boolean) {
   if (result) {
     // Only close if
@@ -19,7 +22,7 @@ function loginResult(result: boolean) {
 </script>
 
 <template>
-  <UModal title="Login to your bot" description="Enter your bot credentials to connect">
+  <UModal :title="t('auth.modalTitle')" :description="t('auth.modalDescription')">
     <template #body>
       <BotLogin in-modal :existing-auth="loginInfo" @login-result="loginResult" />
     </template>

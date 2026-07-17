@@ -13,4 +13,7 @@ export default {
   usernamePlaceholder: 'Freqtrader',
   invalidCredentials: 'Connected to bot, however Login failed, Username or Password wrong.',
   unreachable: 'Please verify that the bot is running, the Bot API is enabled and the URL is reachable.\nYou can verify this by navigating to {url}/api/v1/ping to make sure the bot API is reachable',
+  modalTitle: 'Login to your bot',
+  modalDescription: 'Enter your bot credentials to connect',
+  pageHeader: 'Freqtrade bot Login',
 };

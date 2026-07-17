@@ -13,4 +13,7 @@ export default {
   usernamePlaceholder: 'Freqtrader',
   invalidCredentials: '已连接到机器人，但登录失败：用户名或密码错误。',
   unreachable: '请确认机器人正在运行、已启用 Bot API，且 URL 可访问。\n可在浏览器打开 {url}/api/v1/ping 检查 Bot API 是否可达',
+  modalTitle: '登录机器人',
+  modalDescription: '输入机器人凭据以连接',
+  pageHeader: 'Freqtrade 机器人登录',
 };
