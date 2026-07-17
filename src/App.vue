@@ -1,9 +1,11 @@
 <script setup lang="ts">
 const settingsStore = useSettingsStore();
 const colorStore = useColorStore();
+const { applyLocale } = useLocale();
 onMounted(() => {
   setTimezone(settingsStore.timezone);
   colorStore.updateProfitLossColor();
+  applyLocale();
 });
 watch(
   () => settingsStore.timezone,

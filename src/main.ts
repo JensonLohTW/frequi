@@ -5,6 +5,7 @@ import ui from '@nuxt/ui/vue-plugin';
 import App from './App.vue';
 import { VueDraggableGrid } from './plugins/vue-grid-layout';
 import router from './router';
+import { i18n } from './i18n';
 import './styles/tailwind.css';
 
 const myApp = createApp(App);
@@ -13,6 +14,7 @@ const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 myApp.use(pinia);
 
+myApp.use(i18n);
 myApp.use(ui);
 
 myApp.use(router);

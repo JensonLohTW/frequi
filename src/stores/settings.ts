@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { LocalePreference } from '@/i18n';
 import { TimeSummaryCols, TimeSummaryOptions } from '@/types';
 import type { ThemeName, UiVersion } from '@/types';
 import { FtWsMessageTypes } from '@/types/wsMessageTypes';
@@ -38,6 +39,7 @@ export const useSettingsStore = defineStore(
 
     const multiPaneButtonsShowText = ref(false);
     const multiPairSelection = ref(false);
+    const localePreference = ref<LocalePreference>('auto');
 
     const backtestAdditionalMetrics = ref<string[]>(['profit_factor', 'expectancy']);
 
@@ -78,6 +80,7 @@ export const useSettingsStore = defineStore(
       timeProfitPreference,
       multiPaneButtonsShowText,
       multiPairSelection,
+      localePreference,
       backtestAdditionalMetrics,
       isDarkTheme,
       chartTheme,
