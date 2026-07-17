@@ -1,1 +1,15 @@
-node_modules/*
+# Used when build context is apps/frontend (upstream-style).
+# Platform compose builds from monorepo root; see root .dockerignore + deploy/docker/frontend.Dockerfile.
+.git
+.env
+.env.*
+node_modules
+dist
+coverage
+playwright-report
+test-results
+e2e
+tests
+*.md
+.vscode
+.idea
