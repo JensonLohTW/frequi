@@ -29,8 +29,8 @@ export default defineConfig({
       ui: {
         colors: {
           primary: 'brand',
-          // slate, gray or mist
-          neutral: 'mist',
+          // zinc closer to shadcn neutrals; fall back to mist/slate if invalid
+          neutral: 'zinc',
         },
         alert: {
           defaultVariants: {
