@@ -11,4 +11,6 @@ export default {
   corsHint: '请同时检查机器人的 CORS 配置：',
   corsDocs: 'Freqtrade CORS 文档',
   usernamePlaceholder: 'Freqtrader',
+  invalidCredentials: '已连接到机器人，但登录失败：用户名或密码错误。',
+  unreachable: '请确认机器人正在运行、已启用 Bot API，且 URL 可访问。\n可在浏览器打开 {url}/api/v1/ping 检查 Bot API 是否可达',
 };

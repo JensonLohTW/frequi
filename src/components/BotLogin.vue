@@ -127,11 +127,10 @@ async function handleSubmit() {
     if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
       nameState.value = false;
       pwdState.value = false;
-      errorMessage.value = 'Connected to bot, however Login failed, Username or Password wrong.';
+      errorMessage.value = t('auth.invalidCredentials');
     } else {
       urlState.value = false;
-      errorMessage.value = `Please verify that the bot is running, the Bot API is enabled and the URL is reachable.
-You can verify this by navigating to ${auth.value.url}/api/v1/ping to make sure the bot API is reachable`;
+      errorMessage.value = t('auth.unreachable', { url: auth.value.url });
       if (auth.value.url !== window.location.origin) {
         errorMessageCORS.value = true;
       }
