@@ -21,10 +21,10 @@ withDefaults(
 
 <template>
   <div
-    class="flex flex-col h-full w-full border dark:border-neutral-800 border-neutral-200 rounded-sm"
+    class="flex flex-col h-full w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-default overflow-hidden shadow-sm"
   >
     <div
-      class="drag-header py-1 px-2 dark:bg-neutral-800 bg-neutral-100 border-b border-neutral-300 dark:border-neutral-700"
+      class="drag-header py-1.5 px-3 text-sm font-medium bg-neutral-50 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-800"
     >
       <slot name="header">
         <div class="flex justify-center items-center gap-2">
