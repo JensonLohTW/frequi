@@ -2,6 +2,7 @@
   "extends": "../tsconfig.app.json",
   "compilerOptions": {
     "sourceMap": false,
+    "types": ["node"]
   },
   "include": [
     "*.ts",

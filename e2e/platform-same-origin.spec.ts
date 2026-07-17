@@ -16,7 +16,7 @@
 import { randomBytes } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const enabled = process.env.PLATFORM_E2E === '1';
 const realApi = process.env.PLATFORM_E2E_REAL_API === '1';
