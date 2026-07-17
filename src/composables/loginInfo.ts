@@ -9,12 +9,16 @@ import type {
   AuthStorageMulti,
   BotDescriptor,
 } from '@/types';
+import { AUTH_LOGIN_INFO_KEY, createAuthStorageAdapter } from '@/platform/authStorage';
+import { API_BASE_PATH, normalizeApiBase } from '@/platform/apiBase';
+import { isPlatformSingleOrigin } from '@/platform/flags';
+import { createRefreshCoordinator } from '@/platform/refreshCoordinator';
 
-const AUTH_LOGIN_INFO = 'ftAuthLoginInfo';
-const APIBASE = '/api/v1';
+const platformSingleOrigin = isPlatformSingleOrigin();
+const authStorageAdapter = createAuthStorageAdapter(platformSingleOrigin);
 
-// Global state for all login infos
-const allLoginInfos = useStorage<AuthStorageMulti>(AUTH_LOGIN_INFO, {});
+// Global state for all login infos — storage backend selected by platform flag
+const allLoginInfos = useStorage<AuthStorageMulti>(AUTH_LOGIN_INFO_KEY, {}, authStorageAdapter);
 
 /**
  * Get available bots with their descriptors
@@ -39,8 +43,6 @@ export const loggedInBots = computed<BotDescriptors>(() => {
 });
 
 export function useLoginInfo(botId: string) {
-  console.log('botId', botId);
-
   const currentInfo = computed({
     get: () => allLoginInfos.value[botId]!,
     set: (val) => (allLoginInfos.value[botId] = val),
@@ -52,16 +54,12 @@ export function useLoginInfo(botId: string) {
   });
   const accessToken = computed(() => currentInfo.value.accessToken);
 
-  const baseUrl = computed<string>(() => {
-    const baseURL = currentInfo.value.apiUrl;
-    if (baseURL === null) {
-      return APIBASE;
-    }
-    if (!baseURL.endsWith(APIBASE)) {
-      return `${baseURL}${APIBASE}`;
-    }
-    return `${baseURL}${APIBASE}`;
-  });
+  const baseUrl = computed<string>(() =>
+    normalizeApiBase(
+      platformSingleOrigin ? undefined : currentInfo.value?.apiUrl,
+      platformSingleOrigin,
+    ),
+  );
 
   const baseWsUrl = computed<string>(() => {
     const baseURL = baseUrl.value;
@@ -70,6 +68,16 @@ export function useLoginInfo(botId: string) {
     }
     if (baseURL.startsWith('https://')) {
       return baseURL.replace('https://', 'wss://');
+    }
+    // Relative API base under platform same-origin — derive from page origin
+    if (platformSingleOrigin && typeof window !== 'undefined' && window.location?.origin) {
+      const origin = window.location.origin;
+      if (origin.startsWith('https://')) {
+        return `${origin.replace('https://', 'wss://')}${API_BASE_PATH}`;
+      }
+      if (origin.startsWith('http://')) {
+        return `${origin.replace('http://', 'ws://')}${API_BASE_PATH}`;
+      }
     }
     return '';
   });
@@ -97,18 +105,23 @@ export function useLoginInfo(botId: string) {
   }
 
   function setRefreshTokenExpired(): void {
-    currentInfo.value.refreshToken = '';
-    currentInfo.value.accessToken = '';
+    if (currentInfo.value) {
+      currentInfo.value.refreshToken = '';
+      currentInfo.value.accessToken = '';
+    }
   }
 
   function logout(): void {
-    console.log('Logging out');
     delete allLoginInfos.value[botId];
   }
 
   async function loginCall(auth: AuthPayload): Promise<AuthStorage> {
+    const loginBase = platformSingleOrigin
+      ? normalizeApiBase(undefined, true)
+      : `${auth.url.replace(/\/+$/, '')}${API_BASE_PATH}`;
+
     const { data } = await axios.post<Record<string, never>, AxiosResponse<AuthResponse>>(
-      `${auth.url}/api/v1/token/login`,
+      `${loginBase}/token/login`,
       {},
       {
         auth: { ...auth },
@@ -118,7 +131,11 @@ export function useLoginInfo(botId: string) {
     if (data.access_token && data.refresh_token) {
       const obj: AuthStorage = {
         botName: auth.botName,
-        apiUrl: auth.url,
+        apiUrl: platformSingleOrigin
+          ? typeof window !== 'undefined'
+            ? window.location.origin
+            : auth.url
+          : auth.url,
         username: auth.username,
         accessToken: data.access_token || '',
         refreshToken: data.refresh_token || '',
@@ -126,7 +143,7 @@ export function useLoginInfo(botId: string) {
       };
       return Promise.resolve(obj);
     }
-    return Promise.reject('login failed');
+    return Promise.reject(new Error('login failed'));
   }
 
   async function login(auth: AuthPayload) {
@@ -134,35 +151,35 @@ export function useLoginInfo(botId: string) {
     currentInfo.value = loginInfo;
   }
 
+  async function performRefresh(): Promise<string> {
+    const token = currentInfo.value?.refreshToken;
+    if (!token) {
+      throw new Error('No refresh token');
+    }
+
+    const response = await axios.post<Record<string, never>, AxiosResponse<AuthResponse>>(
+      `${baseUrl.value}/token/refresh`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      },
+    );
+
+    if (!response.data.access_token) {
+      throw new Error('Refresh response missing access_token');
+    }
+    currentInfo.value.accessToken = response.data.access_token;
+    return response.data.access_token;
+  }
+
+  const refreshCoordinator = createRefreshCoordinator({
+    refresh: performRefresh,
+    clearSession: setRefreshTokenExpired,
+  });
+
   function refreshToken(): Promise<string> {
-    console.log('Refreshing token...');
-    const token = currentInfo.value.refreshToken;
-    return new Promise((resolve, reject) => {
-      axios
-        .post<Record<string, never>, AxiosResponse<AuthResponse>>(
-          `${currentInfo.value.apiUrl}${APIBASE}/token/refresh`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        )
-        .then((response) => {
-          if (response.data.access_token) {
-            currentInfo.value.accessToken = response.data.access_token;
-            resolve(response.data.access_token);
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          if (err.response && err.response.status === 401) {
-            console.log('Refresh token did not refresh.');
-            setRefreshTokenExpired();
-          } else if (err.response && (err.response.status === 500 || err.response.status === 404)) {
-            console.log('Bot seems to be offline... - retrying later');
-          }
-          reject(err);
-        });
-    });
+    return refreshCoordinator.runRefresh();
   }
 
   return {
@@ -175,5 +192,6 @@ export function useLoginInfo(botId: string) {
     refreshToken,
     baseUrl,
     baseWsUrl,
+    refreshCoordinator,
   };
 }

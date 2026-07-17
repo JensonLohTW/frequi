@@ -14,10 +14,13 @@ try {
   console.error('Failed to get commit hash. Running in this mode will not be supported.');
 }
 
+const platformSingleOrigin = process.env.VITE_PLATFORM_SINGLE_ORIGIN === 'true';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
     __COMMIT_HASH__: JSON.stringify(commitHash),
+    __PLATFORM_SINGLE_ORIGIN__: JSON.stringify(platformSingleOrigin),
   },
   plugins: [
     createVuePlugin({
@@ -81,7 +84,8 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 700, // Default is 500
-    sourcemap: true,
+    // Platform single-origin builds disable production sourcemaps to reduce token XSS surface.
+    sourcemap: !platformSingleOrigin,
   },
   server: {
     proxy: {

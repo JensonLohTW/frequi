@@ -147,7 +147,6 @@ function handleOk(evt) {
 
 function reset() {
   resetLogin();
-  console.log('reset ', props.existingAuth);
   if (props.existingAuth) {
     botEdit.value = true;
     auth.value.botName = props.existingAuth.botName;
