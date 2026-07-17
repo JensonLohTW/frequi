@@ -8,7 +8,9 @@ dist
 coverage
 playwright-report
 test-results
-e2e
+# Keep e2e/tsconfig.json (referenced by root tsconfig); drop specs/fixtures
+e2e/**
+!e2e/tsconfig.json
 tests
 *.md
 .vscode
